@@ -12,6 +12,8 @@ import { AgentTable } from "@/presentation/components/ui/AgentTable";
 import { SupervisorPanel } from "@/presentation/components/ui/SupervisorPanel";
 import { ActivityFeed } from "@/presentation/components/ui/ActivityFeed";
 import { RetroGameScene } from "@/game-engine/RetroGameScene";
+import { GameHUD } from "@/game-engine/GameHUD";
+import { GameConsoleLog } from "@/game-engine/GameConsoleLog";
 
 export function MissionControl() {
   const { state, summary, loading, error, createTask, patchTask, recentlyUpdatedTaskIds } = useMissionStream();
@@ -64,15 +66,74 @@ export function MissionControl() {
     return <div className="text-zinc-300">Initializing control room...</div>;
   }
 
+  if (skin === "game") {
+    return (
+      <div className="flex h-[100dvh] max-h-[100dvh] w-full flex-col overflow-hidden bg-[#050508] font-pixel text-zinc-100">
+        <GameHUD summary={summary} skin={skin} onSkinChange={setSkin} llm={state.llm} />
+
+        {error ? (
+          <div className="shrink-0 border-y border-amber-800 bg-amber-950/70 px-2 py-1.5 text-[10px] text-amber-100">
+            {error}
+          </div>
+        ) : null}
+
+        <div className="flex min-h-0 flex-1 flex-col gap-1 px-1 pb-0 pt-0 lg:flex-row lg:gap-2 lg:px-2 lg:pb-1">
+          <div className="flex min-h-0 flex-1 flex-col lg:basis-[72%]">
+            <RetroGameScene
+              state={state}
+              selectedAgentId={selectedAgentId}
+              onSelectAgent={setSelectedAgentId}
+              onSelectTable={(id) => setSelectedAgentId(id === "splinter" ? "splinter" : id)}
+              recentlyUpdatedTaskIds={recentlyUpdatedTaskIds}
+            />
+          </div>
+
+          <aside className="flex max-h-full w-full min-w-0 shrink-0 flex-col gap-1.5 overflow-hidden border-4 border-black bg-[#12081f] p-1.5 shadow-[4px_4px_0_#000] lg:w-[22%] lg:max-w-[300px]">
+            <SupervisorPanel
+              skin={skin}
+              compact
+              agents={state.agents}
+              tasks={state.tasks}
+              filters={filters}
+              onFiltersChange={setFilters}
+              createTask={(payload) => createTask(payload)}
+              patchTask={(taskId, patch) => patchTask(taskId, patch)}
+              recentlyUpdatedTaskIds={recentlyUpdatedTaskIds}
+            />
+            {selectedAgent ? (
+              <div className="min-h-0 flex-1 overflow-y-auto text-[11px] leading-snug [&_h2]:text-sm [&_h3]:text-xs [&_section]:!p-2">
+                <AgentDetailPanel
+                  agent={selectedAgent}
+                  tasks={tasksForSelectedAgent}
+                  logs={logsForSelectedAgent}
+                  messages={messagesForSelectedAgent}
+                  llm={state.llm}
+                  agentLLM={state.agentLLM[selectedAgent.id]}
+                  tasksById={tasksById}
+                  patchTask={(taskId, patch) => patchTask(taskId, patch)}
+                  skin={skin}
+                />
+              </div>
+            ) : (
+              <div className="shrink-0 border-2 border-black bg-black/50 p-2 text-[10px] text-zinc-400">
+                Select a unit or table.
+              </div>
+            )}
+            <p className="shrink-0 border-t-2 border-black/60 pt-1.5 text-[9px] leading-tight text-zinc-600">
+              ★ HQ / tables / units — same routing as before.
+            </p>
+          </aside>
+        </div>
+
+        <GameConsoleLog logs={state.logs} />
+      </div>
+    );
+  }
+
   return (
-    <div className={["space-y-4", theme.page, skin === "game" ? "font-pixel" : ""].join(" ")}>
+    <div className={["space-y-4 px-4 py-6 md:px-6 xl:px-8", theme.page].join(" ")}>
       <header
-        className={[
-          "border p-4",
-          skin === "game" ? "rounded-none border-4 border-black shadow-[6px_6px_0_#000]" : "rounded-2xl",
-          theme.border,
-          theme.panel,
-        ].join(" ")}
+        className={["border p-4", "rounded-2xl", theme.border, theme.panel].join(" ")}
       >
         <div className="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
           <div>
@@ -87,8 +148,7 @@ export function MissionControl() {
               value={skin}
               onChange={(e) => setSkin(e.target.value as DashboardSkin)}
               className={[
-                "mt-1 w-full md:w-48 border px-2 py-2 text-sm",
-                skin === "game" ? "rounded-none border-4 border-black font-pixel shadow-[4px_4px_0_#000]" : "rounded",
+                "mt-1 w-full md:w-48 border px-2 py-2 text-sm rounded",
                 theme.border,
                 theme.panelStrong,
                 theme.textSecondary,
@@ -117,17 +177,8 @@ export function MissionControl() {
       <section className="grid grid-cols-1 gap-4 xl:grid-cols-12">
         <div className="xl:col-span-8 space-y-4">
           <div>
-            <h2 className={["mb-2 text-lg font-semibold", theme.textPrimary].join(" ")}>
-              {skin === "game" ? "Mission room (game view)" : "Mission room agents"}
-            </h2>
-            {skin === "game" ? (
-              <RetroGameScene
-                state={state}
-                selectedAgentId={selectedAgentId}
-                onSelectAgent={setSelectedAgentId}
-                onSelectTable={(id) => setSelectedAgentId(id === "splinter" ? "splinter" : id)}
-              />
-            ) : skin === "pizzeria" ? (
+            <h2 className={["mb-2 text-lg font-semibold", theme.textPrimary].join(" ")}>Mission room agents</h2>
+            {skin === "pizzeria" ? (
               <div className={["rounded-2xl border p-4", theme.border, theme.floor ?? theme.panelMuted].join(" ")}>
                 <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                   {state.agents
@@ -219,15 +270,10 @@ export function MissionControl() {
             patchTask={(taskId, patch) => patchTask(taskId, patch)}
             recentlyUpdatedTaskIds={recentlyUpdatedTaskIds}
           />
-          {skin === "game" ? (
-            <div className={["rounded-none border-4 border-black p-3 text-xs shadow-[4px_4px_0_#000]", theme.panelMuted, theme.textMuted].join(" ")}>
-              🎮 Click 🐀 Splinter for HQ focus. Tables open assignment context; turtles open agent intel (left panel).
-            </div>
-          ) : null}
         </aside>
       </section>
 
-      {skin === "game" ? null : <ActivityFeed skin={skin} logs={state.logs} title="Global activity log" />}
+      <ActivityFeed skin={skin} logs={state.logs} title="Global activity log" />
     </div>
   );
 }
@@ -257,4 +303,3 @@ function StatCard({
     </div>
   );
 }
-

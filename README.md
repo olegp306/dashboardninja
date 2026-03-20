@@ -12,7 +12,7 @@ Full-stack TypeScript mission-control dashboard for a multi-agent OpenClaw setup
 - UI and orchestration logic are separated using clean architecture layers
 - LLM-ready execution layer (`packages/llm-core`) with **mock**, **OpenAI**, and **local stub** providers
 - Agent brains are prompt-driven with structured JSON outputs + safe fallbacks (see `packages/agent-brain`)
-- **Game mode (NES / Dendy style)**: optional presentation skin — top-down “room” scene with grid movement + speech bubbles (see `src/game-engine/`, toggle **🎮 game (NES)** in the UI)
+- **Game mode (NES / Dendy style)**: optional presentation skin — **Canvas 2D** top-down mission room (`src/game-engine/canvas/`: `GameEngine` RAF loop, tile/agent/effects renderers, `MissionSimulation` for movement). React HUD stays outside the canvas. Toggle **🎮 game (NES)** in the UI.
 
 ## Agent Roles
 
@@ -65,7 +65,10 @@ src/
     components/room/FiltersBar.tsx
     hooks/useMissionStream.ts
     utils/timeAgo.ts
-  game-engine/              # NES-like game presentation (scene, movement, RetroGameScene) — UI only
+  game-engine/
+    canvas/                 # GameCanvas, GameEngine, sprite sheets (`public/assets/sprites/*.png`), SpriteRegistry, sheet blit + procedural fallback
+    RetroGameScene.tsx      # mounts GameCanvas + DOM fallback if 2D context fails
+  public/assets/sprites/    # PNG sheets from `npm run sprites` (original pixel blocks, not TMNT assets)
 packages/
   llm-core/                 # LLM provider interfaces + OpenAI/Mock/Local(stub) implementations
   agent-brain/              # prompt templates + structured parsing + ProviderAgentBrain
@@ -126,6 +129,12 @@ Cost controls:
    - `npm run dev`
 4. Open:
    - [http://localhost:3000](http://localhost:3000) or [http://127.0.0.1:3000](http://127.0.0.1:3000)
+
+### Game sprite sheets (NES mode)
+
+- Generated PNGs live under `public/assets/sprites/` (`leonardo`, `raphael`, `donatello`, `michelangelo`, `splinter`).
+- Regenerate after editing `scripts/generate-squad-sprites.mjs`: `npm run sprites`
+- The canvas preloads these on mount; if a sheet fails to load, agents fall back to procedural silhouettes.
 
 ### Troubleshooting: `ERR_CONNECTION_REFUSED` on localhost
 

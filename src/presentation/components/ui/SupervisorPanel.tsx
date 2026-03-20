@@ -8,6 +8,7 @@ import { TaskPanel } from "@/presentation/components/ui/TaskPanel";
 
 export function SupervisorPanel({
   skin,
+  compact,
   agents,
   tasks,
   filters,
@@ -17,6 +18,8 @@ export function SupervisorPanel({
   recentlyUpdatedTaskIds,
 }: {
   skin: DashboardSkin;
+  /** Denser layout for game / Canvas HUD column. */
+  compact?: boolean;
   agents: Agent[];
   tasks: Task[];
   filters: MissionFilters;
@@ -39,27 +42,47 @@ export function SupervisorPanel({
   );
   const onlineCount = useMemo(() => agents.filter((a) => a.online).length, [agents]);
 
+  const shell = compact
+    ? ["rounded-none border-2 border-black p-2 shadow-[3px_3px_0_#000]", theme.border, theme.panel].join(" ")
+    : ["rounded-2xl border p-4", theme.border, theme.panel].join(" ");
+
   return (
-    <section className={["rounded-2xl border p-4", theme.border, theme.panel].join(" ")}>
-      <div className="flex items-center justify-between">
-        <h2 className={["text-lg font-semibold", theme.textPrimary].join(" ")}>Supervisor Panel</h2>
-        <p className={["text-xs", theme.textMuted].join(" ")}>{skin}</p>
+    <section className={shell}>
+      <div className="flex items-center justify-between gap-2">
+        <h2 className={[compact ? "text-sm font-semibold" : "text-lg font-semibold", theme.textPrimary].join(" ")}>
+          Supervisor
+        </h2>
+        <p className={["text-[10px]", theme.textMuted].join(" ")}>{skin}</p>
       </div>
-      <div className="mt-3 grid grid-cols-2 gap-2">
-        <div className={["rounded-lg border p-2", theme.border, theme.panelStrong].join(" ")}>
-          <p className={["text-[11px]", theme.textMuted].join(" ")}>Active tasks</p>
-          <p className={["text-lg font-semibold", theme.textPrimary].join(" ")}>{activeTaskCount}</p>
+      <div className={compact ? "mt-2 grid grid-cols-2 gap-1.5" : "mt-3 grid grid-cols-2 gap-2"}>
+        <div
+          className={[
+            compact ? "rounded-none border p-1.5" : "rounded-lg border p-2",
+            theme.border,
+            theme.panelStrong,
+          ].join(" ")}
+        >
+          <p className={["text-[10px]", theme.textMuted].join(" ")}>Active</p>
+          <p className={[compact ? "text-base font-semibold" : "text-lg font-semibold", theme.textPrimary].join(" ")}>
+            {activeTaskCount}
+          </p>
         </div>
-        <div className={["rounded-lg border p-2", theme.border, theme.panelStrong].join(" ")}>
-          <p className={["text-[11px]", theme.textMuted].join(" ")}>System health</p>
-          <p className={["text-lg font-semibold", theme.textPrimary].join(" ")}>
-            {onlineCount}/{agents.length} online
+        <div
+          className={[
+            compact ? "rounded-none border p-1.5" : "rounded-lg border p-2",
+            theme.border,
+            theme.panelStrong,
+          ].join(" ")}
+        >
+          <p className={["text-[10px]", theme.textMuted].join(" ")}>Online</p>
+          <p className={[compact ? "text-base font-semibold" : "text-lg font-semibold", theme.textPrimary].join(" ")}>
+            {onlineCount}/{agents.length}
           </p>
         </div>
       </div>
 
       <form
-        className="mt-3 grid grid-cols-1 gap-2"
+        className={compact ? "mt-2 grid grid-cols-1 gap-1.5" : "mt-3 grid grid-cols-1 gap-2"}
         onSubmit={(e) => {
           e.preventDefault();
           if (!form.title.trim() || !form.description.trim()) return;
@@ -97,7 +120,12 @@ export function SupervisorPanel({
           <select
             value={form.assignedTo}
             onChange={(e) => setForm((p) => ({ ...p, assignedTo: e.target.value as AgentId | "unassigned" }))}
-            className={["rounded border px-3 py-2 text-sm", theme.border, theme.panelStrong, theme.textSecondary].join(" ")}
+            className={[
+              compact ? "rounded-none border px-1 py-1 text-[11px]" : "rounded border px-3 py-2 text-sm",
+              theme.border,
+              theme.panelStrong,
+              theme.textSecondary,
+            ].join(" ")}
           >
             <option value="unassigned">Unassigned</option>
             {agents.filter((a) => a.id !== "splinter").map((a) => (
@@ -105,12 +133,18 @@ export function SupervisorPanel({
             ))}
           </select>
         </div>
-        <button type="submit" className={["rounded px-3 py-2 text-sm font-medium", theme.accentButton].join(" ")}>
+        <button
+          type="submit"
+          className={[
+            compact ? "rounded-none border-2 border-black px-2 py-1 text-[11px] font-medium shadow-[2px_2px_0_#000]" : "rounded px-3 py-2 text-sm font-medium",
+            theme.accentButton,
+          ].join(" ")}
+        >
           Create Task
         </button>
       </form>
 
-      <div className="mt-4">
+      <div className={compact ? "mt-2" : "mt-4"}>
         <TaskPanel
           skin={skin}
           agents={agents}

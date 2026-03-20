@@ -11,6 +11,7 @@ export const TableEntity = memo(function TableEntity({
   onClick,
   taskCount,
   highlight,
+  pulse,
 }: {
   grid: GridPos;
   label: string;
@@ -18,6 +19,8 @@ export const TableEntity = memo(function TableEntity({
   onClick: () => void;
   taskCount: number;
   highlight?: boolean;
+  /** Brief mission flash (e.g. task updated). */
+  pulse?: boolean;
 }) {
   const pos = gridToPixel(grid);
   const w = 10 * SCENE.cellPx;
@@ -39,6 +42,9 @@ export const TableEntity = memo(function TableEntity({
         {label}
       </div>
       <div className="px-1 py-1 text-[9px] text-white/90">tasks: {taskCount}</div>
+      {pulse ? (
+        <div className="pointer-events-none absolute inset-0 animate-nes-sparkle bg-amber-300/40 mix-blend-screen" />
+      ) : null}
     </button>
   );
 });

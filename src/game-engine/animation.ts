@@ -20,3 +20,5 @@ export const animationClassForAgent = (state: AgentVisualState): string => {
 };
 
 export const auraClassForSplinter = (): string => "animate-nes-aura";
+
+export const animationClassWalking = (walking: boolean): string => (walking ? "animate-nes-walk" : "");

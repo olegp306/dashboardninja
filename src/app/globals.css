@@ -134,3 +134,49 @@ body {
 .animate-nes-bubble {
   animation: nes-bubble 4.2s ease-in-out forwards;
 }
+
+@keyframes nes-neon {
+  0%,
+  100% {
+    filter: brightness(1);
+    box-shadow: 4px 4px 0 #000, 0 0 12px rgba(244, 114, 182, 0.35);
+  }
+  50% {
+    filter: brightness(1.12);
+    box-shadow: 4px 4px 0 #000, 0 0 22px rgba(244, 114, 182, 0.65);
+  }
+}
+
+.animate-nes-neon {
+  animation: nes-neon 2.4s ease-in-out infinite;
+}
+
+@keyframes nes-walk {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-2px);
+  }
+}
+
+.animate-nes-walk {
+  animation: nes-walk 0.22s steps(2, end) infinite;
+}
+
+@keyframes nes-sparkle {
+  0%,
+  100% {
+    opacity: 0;
+    transform: scale(0.6);
+  }
+  40% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.animate-nes-sparkle {
+  animation: nes-sparkle 0.65s ease-out forwards;
+}
