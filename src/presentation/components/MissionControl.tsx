@@ -3,15 +3,17 @@
 import { useMemo, useState } from "react";
 import { useMissionStream } from "@/presentation/hooks/useMissionStream";
 import type { AgentId } from "@/domain/types";
-import { DeskLayout } from "@/presentation/components/room/DeskLayout";
 import { AgentDetailPanel } from "@/presentation/components/room/AgentDetailPanel";
-import { SplinterSupervisorPanel } from "@/presentation/components/room/SplinterSupervisorPanel";
 import type { MissionFilters } from "@/presentation/components/room/FiltersBar";
 import type { DashboardSkin } from "@/presentation/theme/skins";
-import { skinTokens } from "@/presentation/theme/skins";
+import { designTokens, skinTokens } from "@/presentation/theme/skins";
+import { AgentCard } from "@/presentation/components/ui/AgentCard";
+import { AgentTable } from "@/presentation/components/ui/AgentTable";
+import { SupervisorPanel } from "@/presentation/components/ui/SupervisorPanel";
+import { ActivityFeed } from "@/presentation/components/ui/ActivityFeed";
 
 export function MissionControl() {
-  const { state, summary, loading, error, createTask, patchTask } = useMissionStream();
+  const { state, summary, loading, error, createTask, patchTask, recentlyUpdatedTaskIds } = useMissionStream();
   const [skin, setSkin] = useState<DashboardSkin>("control-room");
   const [selectedAgentId, setSelectedAgentId] = useState<AgentId>("leonardo");
   const [filters, setFilters] = useState<MissionFilters>({
@@ -96,13 +98,58 @@ export function MissionControl() {
         <div className="xl:col-span-8 space-y-4">
           <div>
             <h2 className={["mb-2 text-lg font-semibold", theme.textPrimary].join(" ")}>Mission room agents</h2>
-            <DeskLayout
-              agents={state.agents}
-              selectedAgentId={selectedAgentId}
-              onSelectAgent={setSelectedAgentId}
-              currentTaskTitlesById={currentTaskTitlesById}
-              skin={skin}
-            />
+            {skin === "pizzeria" ? (
+              <div className={["rounded-2xl border p-4", theme.border, theme.floor ?? theme.panelMuted].join(" ")}>
+                <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                  {state.agents
+                    .filter((a) => a.id !== "splinter")
+                    .map((agent) => (
+                      <AgentTable
+                        key={agent.id}
+                        agent={agent}
+                        skin={skin}
+                        selected={agent.id === selectedAgentId}
+                        taskTitle={agent.currentTaskId ? currentTaskTitlesById[agent.currentTaskId] ?? null : null}
+                        onSelect={setSelectedAgentId}
+                      />
+                    ))}
+                </div>
+                <div className="mt-4 flex justify-center">
+                  {(() => {
+                    const splinter = state.agents.find((a) => a.id === "splinter");
+                    if (!splinter) return null;
+                    return (
+                      <div className="w-full max-w-md">
+                        <AgentTable
+                          agent={splinter}
+                          skin={skin}
+                          selected={splinter.id === selectedAgentId}
+                          taskTitle={`${summary.activeTasks} active tasks`}
+                          onSelect={setSelectedAgentId}
+                          large
+                          subtitle={`${state.agents.filter((a) => a.online).length}/${state.agents.length} online`}
+                        />
+                      </div>
+                    );
+                  })()}
+                </div>
+              </div>
+            ) : (
+              <div className={["rounded-2xl border p-4", theme.border, theme.panelMuted].join(" ")}>
+                <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+                  {state.agents.map((agent) => (
+                    <AgentCard
+                      key={agent.id}
+                      agent={agent}
+                      skin={skin}
+                      selected={agent.id === selectedAgentId}
+                      currentTaskTitle={agent.currentTaskId ? currentTaskTitlesById[agent.currentTaskId] ?? null : null}
+                      onSelect={setSelectedAgentId}
+                    />
+                  ))}
+                </div>
+              </div>
+            )}
           </div>
 
           <div>
@@ -124,29 +171,20 @@ export function MissionControl() {
         </div>
 
         <aside className="xl:col-span-4">
-          <SplinterSupervisorPanel
+          <SupervisorPanel
+            skin={skin}
             agents={state.agents}
             tasks={state.tasks}
-            createTask={(payload) => createTask(payload)}
-            patchTask={(taskId, patch) => patchTask(taskId, patch)}
             filters={filters}
             onFiltersChange={setFilters}
-            skin={skin}
+            createTask={(payload) => createTask(payload)}
+            patchTask={(taskId, patch) => patchTask(taskId, patch)}
+            recentlyUpdatedTaskIds={recentlyUpdatedTaskIds}
           />
         </aside>
       </section>
 
-      <section className={["rounded-2xl border p-4", theme.border, theme.panelMuted].join(" ")}>
-        <h2 className={["text-sm font-semibold", theme.textPrimary].join(" ")}>Global activity log</h2>
-        <div className="mt-3 grid grid-cols-1 gap-2 md:grid-cols-2">
-          {state.logs.slice(0, 10).map((log) => (
-            <div key={log.id} className={["rounded-lg border p-2", theme.border, theme.panelStrong].join(" ")}>
-              <p className={["text-xs", theme.textSecondary].join(" ")}>{log.agentId}: {log.message}</p>
-              <p className={["text-[11px]", theme.textMuted].join(" ")}>{new Date(log.createdAt).toLocaleTimeString()} | {log.source}</p>
-            </div>
-          ))}
-        </div>
-      </section>
+      <ActivityFeed skin={skin} logs={state.logs} title="Global activity log" />
     </div>
   );
 }
@@ -163,7 +201,7 @@ function StatCard({
   return (
     <div className={["rounded-lg border px-4 py-3", theme.border, theme.panelStrong].join(" ")}>
       <p className={["text-xs uppercase tracking-wide", theme.textMuted].join(" ")}>{label}</p>
-      <p className={["mt-1 text-2xl font-semibold", theme.textPrimary].join(" ")}>{value}</p>
+      <p className={["mt-1 text-2xl font-semibold", theme.textPrimary, designTokens.shadow.soft].join(" ")}>{value}</p>
     </div>
   );
 }

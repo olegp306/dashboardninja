@@ -14,6 +14,7 @@ export const useMissionStream = () => {
   const [state, setState] = useState<DashboardState | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
+  const [recentlyUpdatedTaskIds, setRecentlyUpdatedTaskIds] = useState<string[]>([]);
 
   useEffect(() => {
     const bootstrap = async () => {
@@ -34,7 +35,18 @@ export const useMissionStream = () => {
     const source = new EventSource("/api/stream");
     source.addEventListener("state", (event) => {
       const data = JSON.parse((event as MessageEvent<string>).data) as DashboardState;
-      setState(data);
+      setState((prev) => {
+        if (!prev) return data;
+        const prevMap = new Map(prev.tasks.map((task) => [task.id, task.updatedAt]));
+        const changed = data.tasks
+          .filter((task) => prevMap.get(task.id) && prevMap.get(task.id) !== task.updatedAt)
+          .map((task) => task.id);
+        if (changed.length > 0) {
+          setRecentlyUpdatedTaskIds(changed);
+          window.setTimeout(() => setRecentlyUpdatedTaskIds([]), 1100);
+        }
+        return data;
+      });
       setError(null);
     });
     source.onerror = () => setError("Realtime stream interrupted. Retrying...");
@@ -73,6 +85,6 @@ export const useMissionStream = () => {
     setState((await response.json()) as DashboardState);
   };
 
-  return { state, summary, loading, error, createTask, patchTask };
+  return { state, summary, loading, error, createTask, patchTask, recentlyUpdatedTaskIds };
 };
 
