@@ -123,7 +123,28 @@ Cost controls:
 3. Start:
    - `npm run dev`
 4. Open:
-   - [http://localhost:3000](http://localhost:3000)
+   - [http://localhost:3000](http://localhost:3000) or [http://127.0.0.1:3000](http://127.0.0.1:3000)
+
+### Troubleshooting: `ERR_CONNECTION_REFUSED` on localhost
+
+This means **nothing is listening** on that port (usually the dev server is not running or exited).
+
+1. **Start the dev server from the project root** (folder that contains `package.json`):
+   ```bash
+   cd c:\Repos\dashboardninja
+   npm run dev
+   ```
+2. **Wait until you see** `✓ Ready` (or similar) in the terminal. **Leave that terminal open** — closing it stops the server.
+3. **Use the URL with the port**: `http://localhost:3000` — not `http://localhost` alone (that uses port 80 and is often empty).
+4. If the terminal says **port is in use** and picks another port (e.g. 3001), open **`http://localhost:3001`** instead.
+5. **Free port 3000** (Windows, PowerShell as admin if needed):
+   ```text
+   netstat -ano | findstr :3000
+   taskkill /PID <pid_from_last_column> /F
+   ```
+   Then run `npm run dev` again.
+6. **Firewall**: allow Node.js / `node.exe` on private networks, or temporarily try with Windows Firewall off to test (re-enable after).
+7. **Proxy/VPN**: disable system or browser proxy for local addresses, or add `localhost` / `127.0.0.1` to bypass list.
 
 ## API Endpoints (Mock Mode)
 
