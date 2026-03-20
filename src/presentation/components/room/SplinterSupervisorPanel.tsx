@@ -4,6 +4,8 @@ import { useState } from "react";
 import type { Agent, AgentId, Task, TaskPriority, TaskStatus } from "@/domain/types";
 import type { MissionFilters } from "@/presentation/components/room/FiltersBar";
 import { MissionQueue } from "@/presentation/components/room/MissionQueue";
+import type { DashboardSkin } from "@/presentation/theme/skins";
+import { skinTokens } from "@/presentation/theme/skins";
 
 export function SplinterSupervisorPanel({
   agents,
@@ -12,6 +14,7 @@ export function SplinterSupervisorPanel({
   patchTask,
   filters,
   onFiltersChange,
+  skin,
 }: {
   agents: Agent[];
   tasks: Task[];
@@ -19,7 +22,9 @@ export function SplinterSupervisorPanel({
   patchTask: (taskId: string, patch: { status?: TaskStatus; assignedTo?: AgentId | null }) => Promise<void>;
   filters: MissionFilters;
   onFiltersChange: (next: MissionFilters) => void;
+  skin: DashboardSkin;
 }) {
+  const theme = skinTokens[skin];
   const [form, setForm] = useState({
     title: "",
     description: "",
@@ -28,15 +33,15 @@ export function SplinterSupervisorPanel({
   });
 
   return (
-    <section className="rounded-3xl border border-zinc-800 bg-zinc-900/40 p-5">
+    <section className={["rounded-2xl border p-5", theme.border, theme.panel].join(" ")}>
       <div className="flex items-start justify-between gap-4">
         <div>
-          <h2 className="text-lg font-semibold text-zinc-100">Splinter supervisor</h2>
-          <p className="mt-1 text-sm text-zinc-500">Create, route, and reassign mission tasks.</p>
+          <h2 className={["text-lg font-semibold", theme.textPrimary].join(" ")}>Splinter supervisor</h2>
+          <p className={["mt-1 text-sm", theme.textMuted].join(" ")}>Create, route, and reassign mission tasks.</p>
         </div>
         <div className="text-right">
-          <p className="text-[11px] text-zinc-500">Supervisor mode</p>
-          <p className="text-sm text-zinc-200 font-medium">Control-room</p>
+          <p className={["text-[11px]", theme.textMuted].join(" ")}>Supervisor mode</p>
+          <p className={["text-sm font-medium", theme.textSecondary].join(" ")}>{skin}</p>
         </div>
       </div>
 
@@ -60,18 +65,18 @@ export function SplinterSupervisorPanel({
           value={form.title}
           onChange={(e) => setForm((prev) => ({ ...prev, title: e.target.value }))}
           placeholder="Task title"
-          className="rounded border border-zinc-700 bg-zinc-950 px-3 py-2 text-sm text-zinc-100 md:col-span-2"
+          className={["rounded border px-3 py-2 text-sm md:col-span-2", theme.border, theme.panelStrong, theme.textSecondary].join(" ")}
         />
         <input
           value={form.description}
           onChange={(e) => setForm((prev) => ({ ...prev, description: e.target.value }))}
           placeholder="Task description"
-          className="rounded border border-zinc-700 bg-zinc-950 px-3 py-2 text-sm text-zinc-100 md:col-span-3"
+          className={["rounded border px-3 py-2 text-sm md:col-span-3", theme.border, theme.panelStrong, theme.textSecondary].join(" ")}
         />
         <select
           value={form.priority}
           onChange={(e) => setForm((prev) => ({ ...prev, priority: e.target.value as TaskPriority }))}
-          className="rounded border border-zinc-700 bg-zinc-950 px-3 py-2 text-sm text-zinc-100"
+          className={["rounded border px-3 py-2 text-sm", theme.border, theme.panelStrong, theme.textSecondary].join(" ")}
         >
           {(["low", "medium", "high", "critical"] as TaskPriority[]).map((priority) => (
             <option key={priority} value={priority}>
@@ -82,7 +87,7 @@ export function SplinterSupervisorPanel({
         <select
           value={form.assignedTo}
           onChange={(e) => setForm((prev) => ({ ...prev, assignedTo: e.target.value as AgentId | "unassigned" }))}
-          className="rounded border border-zinc-700 bg-zinc-950 px-3 py-2 text-sm text-zinc-100"
+          className={["rounded border px-3 py-2 text-sm", theme.border, theme.panelStrong, theme.textSecondary].join(" ")}
         >
           <option value="unassigned">Unassigned</option>
           {agents
@@ -93,13 +98,13 @@ export function SplinterSupervisorPanel({
               </option>
             ))}
         </select>
-        <button type="submit" className="md:col-span-5 rounded bg-cyan-700 px-3 py-2 text-sm font-medium text-white hover:bg-cyan-600">
+        <button type="submit" className={["md:col-span-5 rounded px-3 py-2 text-sm font-medium", theme.accentButton].join(" ")}>
           Create and route mission task
         </button>
       </form>
 
       <div className="mt-5">
-        <MissionQueue agents={agents} tasks={tasks} filters={filters} onFiltersChange={onFiltersChange} patchTask={patchTask} />
+        <MissionQueue agents={agents} tasks={tasks} filters={filters} onFiltersChange={onFiltersChange} patchTask={patchTask} skin={skin} />
       </div>
     </section>
   );

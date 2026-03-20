@@ -2,6 +2,8 @@
 
 import type { Agent, AgentId, Task, TaskPriority, TaskStatus } from "@/domain/types";
 import { FiltersBar, type MissionFilters } from "@/presentation/components/room/FiltersBar";
+import type { DashboardSkin } from "@/presentation/theme/skins";
+import { skinTokens } from "@/presentation/theme/skins";
 
 const priorityTone: Record<TaskPriority, { badge: string; dot: string }> = {
   low: { badge: "bg-zinc-800 text-zinc-100", dot: "bg-zinc-400" },
@@ -26,13 +28,16 @@ export function MissionQueue({
   filters,
   onFiltersChange,
   patchTask,
+  skin,
 }: {
   agents: Agent[];
   tasks: Task[];
   filters: MissionFilters;
   onFiltersChange: (next: MissionFilters) => void;
   patchTask: (taskId: string, patch: { status?: TaskStatus; assignedTo?: AgentId | null }) => Promise<void>;
+  skin: DashboardSkin;
 }) {
+  const theme = skinTokens[skin];
   const filtered = tasks
     .filter((t) => (filters.status === "any" ? true : t.status === filters.status))
     .filter((t) => (filters.priority === "any" ? true : t.priority === filters.priority))
@@ -44,11 +49,11 @@ export function MissionQueue({
     });
 
   return (
-    <div className="rounded-3xl border border-zinc-800 bg-zinc-900/40 p-5">
+    <div className={["rounded-2xl border p-5", theme.border, theme.panel].join(" ")}>
       <div className="flex items-center justify-between gap-3">
         <div>
-          <h2 className="text-lg font-semibold text-zinc-100">Mission queue</h2>
-          <p className="mt-1 text-sm text-zinc-500">Visible to Splinter supervisor.</p>
+          <h2 className={["text-lg font-semibold", theme.textPrimary].join(" ")}>Mission queue</h2>
+          <p className={["mt-1 text-sm", theme.textMuted].join(" ")}>Visible to Splinter supervisor.</p>
         </div>
       </div>
 
@@ -57,27 +62,28 @@ export function MissionQueue({
           filters={filters}
           onChange={onFiltersChange}
           agents={agents.map((a) => ({ id: a.id, name: a.name }))}
+          skin={skin}
         />
       </div>
 
       <div className="mt-4 space-y-2">
         {filtered.length === 0 ? (
-          <p className="text-xs text-zinc-500">No tasks match the current filters.</p>
+          <p className={["text-xs", theme.textMuted].join(" ")}>No tasks match the current filters.</p>
         ) : (
           filtered.slice(0, 14).map((task) => {
             const assignedAgent = task.assignedTo ? agents.find((a) => a.id === task.assignedTo) : null;
             return (
-              <div key={task.id} className="rounded-2xl border border-zinc-800 bg-zinc-950/30 p-3">
+              <div key={task.id} className={["rounded-xl border p-3", theme.border, theme.panelMuted].join(" ")}>
                 <div className="flex items-start justify-between gap-3">
                   <div className="min-w-0">
-                    <p className="text-sm text-zinc-100 truncate">{task.title}</p>
-                    <p className="mt-1 text-[11px] text-zinc-500 truncate">{task.description}</p>
+                    <p className={["text-sm truncate", theme.textPrimary].join(" ")}>{task.title}</p>
+                    <p className={["mt-1 text-[11px] truncate", theme.textMuted].join(" ")}>{task.description}</p>
                   </div>
                   <div className="shrink-0 text-right">
                     <span className={["inline-flex items-center rounded-full px-2 py-1 text-[11px] ", statusBadgeTone[task.status]].join(" ")}>
                       {task.status}
                     </span>
-                    <div className="mt-1 text-[11px] text-zinc-500">{task.updatedAt ? new Date(task.updatedAt).toLocaleTimeString() : ""}</div>
+                    <div className={["mt-1 text-[11px]", theme.textMuted].join(" ")}>{task.updatedAt ? new Date(task.updatedAt).toLocaleTimeString() : ""}</div>
                   </div>
                 </div>
 
@@ -85,7 +91,7 @@ export function MissionQueue({
                   <span className={["inline-flex items-center rounded-full px-2 py-1 text-[11px]", priorityTone[task.priority].badge].join(" ")}>
                     {task.priority}
                   </span>
-                  <span className="text-[11px] text-zinc-500">
+                  <span className={["text-[11px]", theme.textMuted].join(" ")}>
                     Assigned: {assignedAgent ? assignedAgent.name : "Unassigned"}
                   </span>
 
@@ -96,7 +102,7 @@ export function MissionQueue({
                         const assignedTo = e.target.value === "unassigned" ? null : (e.target.value as AgentId);
                         void patchTask(task.id, { assignedTo });
                       }}
-                      className="rounded bg-zinc-800 px-2 py-1 text-xs text-zinc-200"
+                      className={["rounded px-2 py-1 text-xs", theme.panelStrong, theme.textSecondary].join(" ")}
                       aria-label={`Assign ${task.title}`}
                     >
                       <option value="unassigned">Unassigned</option>
@@ -114,7 +120,7 @@ export function MissionQueue({
                         const status = e.target.value as TaskStatus;
                         void patchTask(task.id, { status });
                       }}
-                      className="rounded bg-zinc-800 px-2 py-1 text-xs text-zinc-200"
+                      className={["rounded px-2 py-1 text-xs", theme.panelStrong, theme.textSecondary].join(" ")}
                       aria-label={`Update status for ${task.title}`}
                     >
                       {(["queued", "assigned", "in_progress", "done", "failed"] as TaskStatus[]).map((s) => (
