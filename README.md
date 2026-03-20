@@ -10,6 +10,8 @@ Full-stack TypeScript mission-control dashboard for a multi-agent OpenClaw setup
 - Central Splinter mission queue with filters (status, priority, assigned agent)
 - OpenClaw adapter scaffold included with explicit TODO markers
 - UI and orchestration logic are separated using clean architecture layers
+- LLM-ready execution layer (`packages/llm-core`) with **mock**, **OpenAI**, and **local stub** providers
+- Agent brains are prompt-driven with structured JSON outputs + safe fallbacks (see `packages/agent-brain`)
 
 ## Agent Roles
 
@@ -62,7 +64,43 @@ src/
     components/room/FiltersBar.tsx
     hooks/useMissionStream.ts
     utils/timeAgo.ts
+packages/
+  llm-core/                 # LLM provider interfaces + OpenAI/Mock/Local(stub) implementations
+  agent-brain/              # prompt templates + structured parsing + ProviderAgentBrain
 ```
+
+## LLM provider selection (Mock vs OpenAI vs Local stub)
+
+This project supports **two independent concepts**:
+
+- **Dashboard mode** (`MOCK_MODE` / `LIVE_MODE`): whether tasks/logs come from the in-memory runtime vs OpenClaw remote snapshot.
+- **LLM execution mode** (`LLM_MODE`): whether agent reasoning uses simulated JSON (`mock`), real OpenAI (`openai`), or the local stub (`local`).
+
+Rules:
+
+- `LLM_MODE=mock` → `MockLLMProvider` (deterministic-ish simulated JSON; safe for demos)
+- `LLM_MODE=openai` → `OpenAIProvider` (requires `OPENAI_API_KEY`)
+- `LLM_MODE=local` → `LocalLLMProvider` (**stub / not implemented yet**)
+
+Additional safety switches:
+
+- `SIMULATION_MODE=true` forces **effective** LLM mode to `mock` even if `LLM_MODE=openai` (keeps “simulation” safe)
+- `AGENT_AUTONOMY=false` disables autonomous worker ticks (supervisor routing may still occur)
+
+Optional model split:
+
+- `WORKER_MODEL` defaults to `OPENAI_MODEL`
+- `SUPERVISOR_MODEL` defaults to `OPENAI_MODEL` (Splinter uses the supervisor provider instance)
+
+Cost controls:
+
+- `TOKEN_BUDGET_PER_TICK`, `MAX_STEPS_PER_TASK`, `LLM_MAX_RESPONSE_CHARS`, `LLM_DEBOUNCE_MS`
+
+### Useful endpoints
+
+- `GET /api/config/llm` - non-secret LLM configuration snapshot
+- `POST /api/config/llm/test` - `{ "prompt": "..." }` connectivity test (returns model output + usage when available)
+- `GET /api/agents/:id/reasoning-history` - lightweight reasoning timeline (in-memory)
 
 ## Step-by-Step Delivery Mapping
 
@@ -93,12 +131,21 @@ src/
 - `GET /api/stream` - SSE realtime stream of state updates
 - `POST /api/tasks` - create a task
 - `PATCH /api/tasks/:taskId` - update assignment and/or status
+- `GET /api/config/llm` - LLM configuration snapshot (no secrets)
+- `POST /api/config/llm/test` - LLM connectivity test
+- `GET /api/agents/:id/reasoning-history` - per-agent reasoning history (in-memory)
 
 ## OpenClaw Integration Notes
 
 - Current implementation is intentionally scaffold-only.
 - No undocumented OpenClaw APIs are assumed.
 - Use `src/infrastructure/providers/openclaw/openClawAdapter.ts` and replace TODOs once official API contracts are available.
+
+## Known limitations / future work
+
+- `LocalLLMProvider` is intentionally a stub (Ollama/LM Studio wiring comes next; no fake “working” integration).
+- `OpenClawLLMBridge` is scaffold-only for future routing via OpenClaw once contracts exist.
+- Reasoning history and task memory are **in-memory** (resets on server restart).
 
 ## Docker
 

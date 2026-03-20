@@ -54,6 +54,11 @@ export function MissionControl() {
     return state.logs.filter((log) => log.agentId === selectedAgentId);
   }, [state, selectedAgentId]);
 
+  const messagesForSelectedAgent = useMemo(() => {
+    if (!state) return [];
+    return state.agentMessages.filter((m) => m.from === selectedAgentId || m.to === selectedAgentId).slice(0, 12);
+  }, [state, selectedAgentId]);
+
   if (loading || !state || !summary) {
     return <div className="text-zinc-300">Initializing control room...</div>;
   }
@@ -111,6 +116,8 @@ export function MissionControl() {
                         selected={agent.id === selectedAgentId}
                         taskTitle={agent.currentTaskId ? currentTaskTitlesById[agent.currentTaskId] ?? null : null}
                         onSelect={setSelectedAgentId}
+                        llm={state.llm}
+                        agentLLM={state.agentLLM[agent.id]}
                       />
                     ))}
                 </div>
@@ -128,6 +135,8 @@ export function MissionControl() {
                           onSelect={setSelectedAgentId}
                           large
                           subtitle={`${state.agents.filter((a) => a.online).length}/${state.agents.length} online`}
+                          llm={state.llm}
+                          agentLLM={state.agentLLM[splinter.id]}
                         />
                       </div>
                     );
@@ -145,6 +154,8 @@ export function MissionControl() {
                       selected={agent.id === selectedAgentId}
                       currentTaskTitle={agent.currentTaskId ? currentTaskTitlesById[agent.currentTaskId] ?? null : null}
                       onSelect={setSelectedAgentId}
+                      llm={state.llm}
+                      agentLLM={state.agentLLM[agent.id]}
                     />
                   ))}
                 </div>
@@ -158,6 +169,9 @@ export function MissionControl() {
                 agent={selectedAgent}
                 tasks={tasksForSelectedAgent}
                 logs={logsForSelectedAgent}
+                messages={messagesForSelectedAgent}
+                llm={state.llm}
+                agentLLM={state.agentLLM[selectedAgent.id]}
                 tasksById={tasksById}
                 patchTask={(taskId, patch) => patchTask(taskId, patch)}
                 skin={skin}

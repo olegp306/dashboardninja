@@ -1,10 +1,11 @@
 "use client";
 
-import type { Agent, AgentId } from "@/domain/types";
+import type { Agent, AgentId, AgentLLMState, LLMRuntimeMeta } from "@/domain/types";
 import { TurtleAvatar } from "@/presentation/components/room/TurtleAvatar";
 import { timeAgo } from "@/presentation/utils/timeAgo";
 import type { DashboardSkin } from "@/presentation/theme/skins";
 import { designTokens, skinTokens, statusTokens } from "@/presentation/theme/skins";
+import { BrainBadge } from "@/presentation/components/ui/BrainBadge";
 
 export function AgentCard({
   agent,
@@ -12,12 +13,16 @@ export function AgentCard({
   selected,
   currentTaskTitle,
   onSelect,
+  llm,
+  agentLLM,
 }: {
   agent: Agent;
   skin: DashboardSkin;
   selected: boolean;
   currentTaskTitle: string | null;
   onSelect: (id: AgentId) => void;
+  llm: LLMRuntimeMeta;
+  agentLLM?: AgentLLMState;
 }) {
   const theme = skinTokens[skin];
   const status = statusTokens[agent.status];
@@ -67,6 +72,7 @@ export function AgentCard({
           <p className={["mt-1 text-[11px]", theme.textMuted].join(" ")}>
             Last heartbeat: {timeAgo(agent.lastHeartbeatAt)}
           </p>
+          <BrainBadge skin={skin} provider={agentLLM?.provider ?? llm.effectiveMode} meta={llm} lastTokens={agentLLM?.lastTokens} />
         </div>
       </div>
     </button>

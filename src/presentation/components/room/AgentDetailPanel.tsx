@@ -1,11 +1,12 @@
 "use client";
 
 import { useMemo } from "react";
-import type { Agent, AgentId, AgentLog, Task, TaskStatus } from "@/domain/types";
+import type { Agent, AgentId, AgentLLMState, AgentLog, AgentMessage, LLMRuntimeMeta, Task, TaskStatus } from "@/domain/types";
 import { timeAgo } from "@/presentation/utils/timeAgo";
 import { AgentTimeline } from "@/presentation/components/room/AgentTimeline";
 import type { DashboardSkin } from "@/presentation/theme/skins";
 import { skinTokens } from "@/presentation/theme/skins";
+import { BrainBadge } from "@/presentation/components/ui/BrainBadge";
 
 const statusBadgeTone: Record<string, string> = {
   queued: "bg-zinc-800 text-zinc-100 ring-1 ring-zinc-700/60",
@@ -19,6 +20,9 @@ export function AgentDetailPanel({
   agent,
   tasks,
   logs,
+  messages,
+  llm,
+  agentLLM,
   tasksById,
   patchTask,
   skin,
@@ -26,6 +30,9 @@ export function AgentDetailPanel({
   agent: Agent;
   tasks: Task[];
   logs: AgentLog[];
+  messages: AgentMessage[];
+  llm: LLMRuntimeMeta;
+  agentLLM?: AgentLLMState;
   tasksById: Record<string, Task>;
   patchTask: (taskId: string, patch: { status?: TaskStatus; assignedTo?: AgentId | null }) => Promise<void>;
   skin: DashboardSkin;
@@ -42,6 +49,9 @@ export function AgentDetailPanel({
         <div>
           <h2 className={["text-lg font-semibold", theme.textPrimary].join(" ")}>{agent.name}</h2>
           <p className={["mt-1 text-sm", theme.textMuted].join(" ")}>Role: {agent.role.replaceAll("_", " ")}</p>
+          <div className="mt-2">
+            <BrainBadge skin={skin} provider={agentLLM?.provider ?? llm.effectiveMode} meta={llm} lastTokens={agentLLM?.lastTokens} />
+          </div>
         </div>
 
         <div className="text-right">
@@ -82,6 +92,28 @@ export function AgentDetailPanel({
               <p className={["text-xs", theme.textMuted].join(" ")}>No successful tasks yet.</p>
             )}
           </div>
+        </div>
+      </div>
+
+      <div className="mt-4">
+        <h3 className={["text-sm font-semibold", theme.textSecondary].join(" ")}>Inter-agent messages</h3>
+        <div className="mt-2 space-y-2">
+          {messages.length === 0 ? (
+            <p className={["text-xs", theme.textMuted].join(" ")}>No direct messages yet.</p>
+          ) : (
+            messages.map((m) => (
+              <div key={m.id} className={["rounded-xl border p-3", theme.border, theme.panelMuted].join(" ")}>
+                <p className={["text-[11px]", theme.textSecondary].join(" ")}>
+                  <span className={["font-medium", theme.textPrimary].join(" ")}>{m.from}</span>
+                  {" → "}
+                  <span className={["font-medium", theme.textPrimary].join(" ")}>{m.to}</span>
+                  <span className={["ml-2 text-[10px]", theme.textMuted].join(" ")}>{timeAgo(m.createdAt)}</span>
+                </p>
+                <p className={["mt-1 text-xs", theme.textMuted].join(" ")}>{m.content}</p>
+                <p className={["mt-1 text-[10px]", theme.textMuted].join(" ")}>task: {m.taskId}</p>
+              </div>
+            ))
+          )}
         </div>
       </div>
 

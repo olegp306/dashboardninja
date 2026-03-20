@@ -17,5 +17,12 @@ export const runtimeConfig = {
     baseUrl: process.env.OPENCLAW_BASE_URL ?? "",
     apiToken: process.env.OPENCLAW_API_TOKEN ?? "",
   },
+  simulation: {
+    /**
+     * When true, force LLM execution to mock/simulation providers (safe default for demos).
+     * This does NOT disable the dashboard "simulation tick" loop — it only affects LLM routing.
+     */
+    enabled: toBool(process.env.SIMULATION_MODE),
+  },
 };
 

@@ -2,6 +2,18 @@ import type { DashboardState } from "@/domain/types";
 
 const now = new Date().toISOString();
 
+const defaultLlm: DashboardState["llm"] = {
+  mode: "mock",
+  effectiveMode: "mock",
+  requestedMode: "mock",
+  simulationForced: false,
+  autonomyEnabled: true,
+  openaiConfigured: false,
+  models: { worker: "mock", supervisor: "mock" },
+  tokensUsedThisTick: 0,
+  tokenBudgetPerTick: 25_000,
+};
+
 export const mockSeed: DashboardState = {
   generatedAt: now,
   agents: [
@@ -130,5 +142,14 @@ export const mockSeed: DashboardState = {
       createdAt: now,
     },
   ],
+  agentMessages: [],
+  llm: defaultLlm,
+  agentLLM: {
+    leonardo: { provider: "mock" },
+    raphael: { provider: "mock" },
+    donatello: { provider: "mock" },
+    michelangelo: { provider: "mock" },
+    splinter: { provider: "mock" },
+  },
 };
 

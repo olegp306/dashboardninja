@@ -1,8 +1,9 @@
 "use client";
 
-import type { Agent, AgentId } from "@/domain/types";
+import type { Agent, AgentId, AgentLLMState, LLMRuntimeMeta } from "@/domain/types";
 import { TurtleAvatar } from "@/presentation/components/room/TurtleAvatar";
 import { statusTokens, skinTokens, type DashboardSkin } from "@/presentation/theme/skins";
+import { AgentBrainBadge } from "@/presentation/components/ui/BrainBadge";
 
 export function AgentTable({
   agent,
@@ -12,6 +13,8 @@ export function AgentTable({
   onSelect,
   large,
   subtitle,
+  llm,
+  agentLLM,
 }: {
   agent: Agent;
   skin: DashboardSkin;
@@ -20,6 +23,8 @@ export function AgentTable({
   onSelect: (id: AgentId) => void;
   large?: boolean;
   subtitle?: string;
+  llm: LLMRuntimeMeta;
+  agentLLM?: AgentLLMState;
 }) {
   const theme = skinTokens[skin];
   const st = statusTokens[agent.status];
@@ -55,6 +60,12 @@ export function AgentTable({
         <p className={["mt-2 text-xs", theme.textSecondary].join(" ")}>
           {taskTitle ? taskTitle : "No active task"}
         </p>
+        <div className="mt-2 flex items-center justify-center gap-2">
+          <AgentBrainBadge agentLLM={agentLLM} />
+          <span className={["text-[10px]", theme.textMuted].join(" ")}>
+            {llm.simulationForced ? "sim" : "live"} · {llm.effectiveMode}
+          </span>
+        </div>
       </div>
       <span
         className={[

@@ -1,7 +1,10 @@
 import type {
   Agent,
+  AgentLLMState,
   AgentLog,
+  AgentMessage,
   DashboardState,
+  LLMRuntimeMeta,
   TaskAssignInput,
   TaskCreateInput,
   TaskStatusInput,
@@ -21,6 +24,9 @@ export type OpenClawRemoteSnapshot = {
   agents: Agent[];
   tasks: Task[];
   logs: AgentLog[];
+  agentMessages: AgentMessage[];
+  llm: LLMRuntimeMeta;
+  agentLLM: Record<string, AgentLLMState>;
 };
 
 export interface OpenClawAdapter {

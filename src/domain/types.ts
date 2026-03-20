@@ -53,11 +53,44 @@ export type AgentLog = {
   createdAt: string;
 };
 
+export type LLMProviderKind = "mock" | "openai" | "local";
+
+export type AgentMessage = {
+  id: string;
+  taskId: string;
+  from: AgentId;
+  to: AgentId;
+  content: string;
+  createdAt: string;
+};
+
+export type LLMRuntimeMeta = {
+  mode: LLMProviderKind;
+  effectiveMode: LLMProviderKind;
+  requestedMode: LLMProviderKind;
+  simulationForced: boolean;
+  autonomyEnabled: boolean;
+  openaiConfigured: boolean;
+  models: { worker: string; supervisor: string };
+  lastError?: string;
+  tokensUsedThisTick: number;
+  tokenBudgetPerTick: number;
+};
+
+export type AgentLLMState = {
+  provider: LLMProviderKind;
+  lastTokens?: number;
+  lastPhase?: "plan" | "step" | "reflect" | "supervisor";
+};
+
 export type DashboardState = {
   generatedAt: string;
   agents: Agent[];
   tasks: Task[];
   logs: AgentLog[];
+  agentMessages: AgentMessage[];
+  llm: LLMRuntimeMeta;
+  agentLLM: Record<string, AgentLLMState>;
 };
 
 export type TaskCreateInput = {
