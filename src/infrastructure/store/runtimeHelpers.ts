@@ -2,8 +2,14 @@ import type { AgentId, AgentLog } from "@/domain/types";
 
 export const nowIso = () => new Date().toISOString();
 
-export const nextId = (prefix: string) =>
-  `${prefix}-${Date.now()}-${Math.floor(Math.random() * 1000)}`;
+export const nextId = (prefix: string) => {
+  const c = globalThis.crypto;
+  const suffix =
+    c && "randomUUID" in c && typeof c.randomUUID === "function"
+      ? c.randomUUID()
+      : `${Date.now()}-${Math.floor(Math.random() * 1_000_000)}`;
+  return `${prefix}-${suffix}`;
+};
 
 export const pushLog = (args: {
   logs: AgentLog[];

@@ -24,3 +24,113 @@ body {
   color: var(--foreground);
   font-family: var(--font-geist-sans), Arial, Helvetica, sans-serif;
 }
+
+/* NES / “Game mode” presentation helpers (no gameplay logic). */
+.font-pixel {
+  font-family: var(--font-pixel), ui-monospace, monospace;
+  letter-spacing: 0.04em;
+}
+
+@keyframes nes-breathe {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-1px);
+  }
+}
+
+@keyframes nes-work {
+  0%,
+  100% {
+    transform: translateX(0);
+  }
+  50% {
+    transform: translateX(1px);
+  }
+}
+
+@keyframes nes-think {
+  0%,
+  100% {
+    transform: translateY(0) scale(1);
+    filter: brightness(1);
+  }
+  50% {
+    transform: translateY(-2px) scale(1.03);
+    filter: brightness(1.15);
+  }
+}
+
+@keyframes nes-talk {
+  0%,
+  100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.06);
+  }
+}
+
+@keyframes nes-error {
+  0%,
+  100% {
+    filter: brightness(1);
+  }
+  50% {
+    filter: brightness(1.35) hue-rotate(-12deg);
+  }
+}
+
+@keyframes nes-aura {
+  0%,
+  100% {
+    opacity: 0.35;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.6;
+    transform: scale(1.08);
+  }
+}
+
+@keyframes nes-bubble {
+  0% {
+    opacity: 0;
+    transform: translate(-50%, 4px);
+  }
+  12% {
+    opacity: 1;
+    transform: translate(-50%, 0);
+  }
+  88% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+    transform: translate(-50%, -2px);
+  }
+}
+
+.animate-nes-breathe {
+  animation: nes-breathe 2.2s ease-in-out infinite;
+}
+.animate-nes-work {
+  animation: nes-work 0.55s steps(2, end) infinite;
+}
+.animate-nes-think {
+  animation: nes-think 1.1s ease-in-out infinite;
+}
+.animate-nes-talk {
+  animation: nes-talk 0.45s steps(2, end) infinite;
+}
+.animate-nes-error {
+  animation: nes-error 0.35s steps(2, end) infinite;
+}
+.animate-nes-aura {
+  animation: nes-aura 2.8s ease-in-out infinite;
+}
+.animate-nes-bubble {
+  animation: nes-bubble 4.2s ease-in-out forwards;
+}

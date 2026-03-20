@@ -12,6 +12,7 @@ Full-stack TypeScript mission-control dashboard for a multi-agent OpenClaw setup
 - UI and orchestration logic are separated using clean architecture layers
 - LLM-ready execution layer (`packages/llm-core`) with **mock**, **OpenAI**, and **local stub** providers
 - Agent brains are prompt-driven with structured JSON outputs + safe fallbacks (see `packages/agent-brain`)
+- **Game mode (NES / Dendy style)**: optional presentation skin — top-down “room” scene with grid movement + speech bubbles (see `src/game-engine/`, toggle **🎮 game (NES)** in the UI)
 
 ## Agent Roles
 
@@ -64,6 +65,7 @@ src/
     components/room/FiltersBar.tsx
     hooks/useMissionStream.ts
     utils/timeAgo.ts
+  game-engine/              # NES-like game presentation (scene, movement, RetroGameScene) — UI only
 packages/
   llm-core/                 # LLM provider interfaces + OpenAI/Mock/Local(stub) implementations
   agent-brain/              # prompt templates + structured parsing + ProviderAgentBrain

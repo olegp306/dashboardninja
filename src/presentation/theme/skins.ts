@@ -1,4 +1,4 @@
-export type DashboardSkin = "control-room" | "pizzeria" | "minimal";
+export type DashboardSkin = "control-room" | "pizzeria" | "minimal" | "game";
 
 export type SkinTokens = {
   page: string;
@@ -62,6 +62,22 @@ export const skinTokens: Record<DashboardSkin, SkinTokens> = {
     cardHover: "hover:shadow-[0_8px_24px_rgba(0,0,0,0.10)]",
     floor: "bg-zinc-100",
     table: "bg-white",
+  },
+  /** NES / Dendy inspired — pixel borders, limited palette (presentation only). */
+  game: {
+    page: "bg-[#0f0820]",
+    panel: "bg-[#1a0f2e]/95",
+    panelMuted: "bg-[#24143d]/85",
+    panelStrong: "bg-[#2d1b4e]/95",
+    border: "border-[#5eead4]/35",
+    textPrimary: "text-[#ecfccb]",
+    textSecondary: "text-[#bef264]/90",
+    textMuted: "text-[#84cc16]/55",
+    accentButton: "bg-[#f97316] text-black border-4 border-black shadow-[4px_4px_0_#000] hover:brightness-110",
+    accentRing: "ring-[#fbbf24]/50",
+    cardHover: "hover:shadow-[6px_6px_0_#000]",
+    floor: "bg-[#12081f]",
+    table: "bg-[#2d1b4e]/90",
   },
 };
 

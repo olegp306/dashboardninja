@@ -11,6 +11,7 @@ import { AgentCard } from "@/presentation/components/ui/AgentCard";
 import { AgentTable } from "@/presentation/components/ui/AgentTable";
 import { SupervisorPanel } from "@/presentation/components/ui/SupervisorPanel";
 import { ActivityFeed } from "@/presentation/components/ui/ActivityFeed";
+import { RetroGameScene } from "@/game-engine/RetroGameScene";
 
 export function MissionControl() {
   const { state, summary, loading, error, createTask, patchTask, recentlyUpdatedTaskIds } = useMissionStream();
@@ -64,8 +65,15 @@ export function MissionControl() {
   }
 
   return (
-    <div className={["space-y-4", theme.page].join(" ")}>
-      <header className={["rounded-2xl border p-4", theme.border, theme.panel].join(" ")}>
+    <div className={["space-y-4", theme.page, skin === "game" ? "font-pixel" : ""].join(" ")}>
+      <header
+        className={[
+          "border p-4",
+          skin === "game" ? "rounded-none border-4 border-black shadow-[6px_6px_0_#000]" : "rounded-2xl",
+          theme.border,
+          theme.panel,
+        ].join(" ")}
+      >
         <div className="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
           <div>
             <p className={["text-xs uppercase tracking-widest", theme.textMuted].join(" ")}>Dashboard Ninja</p>
@@ -78,18 +86,25 @@ export function MissionControl() {
             <select
               value={skin}
               onChange={(e) => setSkin(e.target.value as DashboardSkin)}
-              className={["mt-1 w-full md:w-48 rounded border px-2 py-2 text-sm", theme.border, theme.panelStrong, theme.textSecondary].join(" ")}
+              className={[
+                "mt-1 w-full md:w-48 border px-2 py-2 text-sm",
+                skin === "game" ? "rounded-none border-4 border-black font-pixel shadow-[4px_4px_0_#000]" : "rounded",
+                theme.border,
+                theme.panelStrong,
+                theme.textSecondary,
+              ].join(" ")}
             >
               <option value="control-room">control-room</option>
               <option value="pizzeria">pizzeria</option>
               <option value="minimal">minimal</option>
+              <option value="game">🎮 game (NES)</option>
             </select>
           </div>
         </div>
         <div className="mt-4 grid grid-cols-1 gap-3 sm:grid-cols-3">
-          <StatCard theme={theme} label="Active agents" value={summary.activeAgents.toString()} />
-          <StatCard theme={theme} label="Live tasks" value={summary.activeTasks.toString()} />
-          <StatCard theme={theme} label="Queued tasks" value={summary.queuedTasks.toString()} />
+          <StatCard skin={skin} theme={theme} label="Active agents" value={summary.activeAgents.toString()} />
+          <StatCard skin={skin} theme={theme} label="Live tasks" value={summary.activeTasks.toString()} />
+          <StatCard skin={skin} theme={theme} label="Queued tasks" value={summary.queuedTasks.toString()} />
         </div>
       </header>
 
@@ -102,8 +117,17 @@ export function MissionControl() {
       <section className="grid grid-cols-1 gap-4 xl:grid-cols-12">
         <div className="xl:col-span-8 space-y-4">
           <div>
-            <h2 className={["mb-2 text-lg font-semibold", theme.textPrimary].join(" ")}>Mission room agents</h2>
-            {skin === "pizzeria" ? (
+            <h2 className={["mb-2 text-lg font-semibold", theme.textPrimary].join(" ")}>
+              {skin === "game" ? "Mission room (game view)" : "Mission room agents"}
+            </h2>
+            {skin === "game" ? (
+              <RetroGameScene
+                state={state}
+                selectedAgentId={selectedAgentId}
+                onSelectAgent={setSelectedAgentId}
+                onSelectTable={(id) => setSelectedAgentId(id === "splinter" ? "splinter" : id)}
+              />
+            ) : skin === "pizzeria" ? (
               <div className={["rounded-2xl border p-4", theme.border, theme.floor ?? theme.panelMuted].join(" ")}>
                 <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                   {state.agents
@@ -184,7 +208,7 @@ export function MissionControl() {
           </div>
         </div>
 
-        <aside className="xl:col-span-4">
+        <aside className="xl:col-span-4 space-y-3">
           <SupervisorPanel
             skin={skin}
             agents={state.agents}
@@ -195,25 +219,39 @@ export function MissionControl() {
             patchTask={(taskId, patch) => patchTask(taskId, patch)}
             recentlyUpdatedTaskIds={recentlyUpdatedTaskIds}
           />
+          {skin === "game" ? (
+            <div className={["rounded-none border-4 border-black p-3 text-xs shadow-[4px_4px_0_#000]", theme.panelMuted, theme.textMuted].join(" ")}>
+              🎮 Click 🐀 Splinter for HQ focus. Tables open assignment context; turtles open agent intel (left panel).
+            </div>
+          ) : null}
         </aside>
       </section>
 
-      <ActivityFeed skin={skin} logs={state.logs} title="Global activity log" />
+      {skin === "game" ? null : <ActivityFeed skin={skin} logs={state.logs} title="Global activity log" />}
     </div>
   );
 }
 
 function StatCard({
+  skin,
   theme,
   label,
   value,
 }: {
+  skin: DashboardSkin;
   theme: (typeof skinTokens)[DashboardSkin];
   label: string;
   value: string;
 }) {
   return (
-    <div className={["rounded-lg border px-4 py-3", theme.border, theme.panelStrong].join(" ")}>
+    <div
+      className={[
+        "border px-4 py-3",
+        skin === "game" ? "rounded-none border-4 border-black shadow-[4px_4px_0_#000]" : "rounded-lg",
+        theme.border,
+        theme.panelStrong,
+      ].join(" ")}
+    >
       <p className={["text-xs uppercase tracking-wide", theme.textMuted].join(" ")}>{label}</p>
       <p className={["mt-1 text-2xl font-semibold", theme.textPrimary, designTokens.shadow.soft].join(" ")}>{value}</p>
     </div>
